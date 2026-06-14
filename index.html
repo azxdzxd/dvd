@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Bouncing DVD Logo</title>
+  <style>
+    body { margin: 0; background: black; overflow: hidden; }
+    #dvd {
+      position: absolute;
+      width: 320px;  /* 1/6 of 1920 */
+      height: 128px; /* aspect ratio ~2.5:1 */
+      background: purple;
+      color: white;
+      font-family: Arial, sans-serif;
+      font-size: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #timer {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      color: white;
+      font-size: 20px;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <div id="dvd">DVD</div>
+  <div id="timer">Time since last corner hit: 0s</div>
+
+  <script>
+    const dvd = document.getElementById("dvd");
+    const timer = document.getElementById("timer");
+
+    let x = 100, y = 100;
+    let vx = 3, vy = 3;
+    const width = dvd.offsetWidth;
+    const height = dvd.offsetHeight;
+
+    let lastCornerHit = Date.now();
+
+    function updateTimer() {
+      const elapsed = ((Date.now() - lastCornerHit) / 1000).toFixed(1);
+      timer.textContent = `Time since last corner hit: ${elapsed}s`;
+    }
+
+    function animate() {
+      const screenW = window.innerWidth;
+      const screenH = window.innerHeight;
+
+      x += vx;
+      y += vy;
+
+      if (x <= 0 || x + width >= screenW) vx *= -1;
+      if (y <= 0 || y + height >= screenH) vy *= -1;
+
+      dvd.style.left = x + "px";
+      dvd.style.top = y + "px";
+
+      // Check for corner hit
+      const cornerHit =
+        (x <= 0 && y <= 0) ||
+        (x <= 0 && y + height >= screenH) ||
+        (x + width >= screenW && y <= 0) ||
+        (x + width >= screenW && y + height >= screenH);
+
+      if (cornerHit) {
+        lastCornerHit = Date.now();
+      }
+
+      updateTimer();
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+  </script>
+</body>
+</html>
