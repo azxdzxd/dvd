@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Bouncing DVD Logo with Corner Timer</title>
+  <title>Bouncing DVD Logo with Corner Countdown</title>
   <style>
     body { margin: 0; background: black; overflow: hidden; }
     #dvd {
@@ -44,26 +44,25 @@
       const screenW = window.innerWidth;
       const screenH = window.innerHeight;
 
-      // Time to hit left/right edges
+      // Time to next vertical wall
       let tx = vx > 0 ? (screenW - width - x) / vx : (0 - x) / vx;
-      // Time to hit top/bottom edges
+      // Time to next horizontal wall
       let ty = vy > 0 ? (screenH - height - y) / vy : (0 - y) / vy;
 
-      // Next corner hit occurs when both x and y align at the same time
-      // So we need the minimum time where tx ≈ ty
-      const tolerance = 0.5; // allow small difference
-      if (Math.abs(tx - ty) < tolerance) {
+      // A corner hit occurs when both times are equal (within tolerance)
+      const tolerance = 0.1;
+      if (Math.abs(tx - ty) < tolerance && tx > 0 && ty > 0) {
         return Math.max(tx, ty);
       }
-      return Math.min(tx, ty); // fallback: show whichever edge comes first
+      return null; // no corner hit in current trajectory
     }
 
     function updateTimer() {
       const t = timeToNextCorner();
-      if (t > 0) {
+      if (t !== null) {
         timer.textContent = `Next corner hit in: ${t.toFixed(1)}s`;
       } else {
-        timer.textContent = "Next corner hit in: calculating…";
+        timer.textContent = "Next corner hit in: not on path";
       }
     }
 
