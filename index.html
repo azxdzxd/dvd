@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Bouncing DVD Logo</title>
+  <title>Bouncing DVD Logo with Corner Timer</title>
   <style>
     body { margin: 0; background: black; overflow: hidden; }
     #dvd {
@@ -29,7 +29,7 @@
 </head>
 <body>
   <div id="dvd">DVD</div>
-  <div id="timer">Time since last corner hit: 0s</div>
+  <div id="timer">Next corner hit in: calculating…</div>
 
   <script>
     const dvd = document.getElementById("dvd");
@@ -40,11 +40,31 @@
     const width = dvd.offsetWidth;
     const height = dvd.offsetHeight;
 
-    let lastCornerHit = Date.now();
+    function timeToNextCorner() {
+      const screenW = window.innerWidth;
+      const screenH = window.innerHeight;
+
+      // Time to hit left/right edges
+      let tx = vx > 0 ? (screenW - width - x) / vx : (0 - x) / vx;
+      // Time to hit top/bottom edges
+      let ty = vy > 0 ? (screenH - height - y) / vy : (0 - y) / vy;
+
+      // Next corner hit occurs when both x and y align at the same time
+      // So we need the minimum time where tx ≈ ty
+      const tolerance = 0.5; // allow small difference
+      if (Math.abs(tx - ty) < tolerance) {
+        return Math.max(tx, ty);
+      }
+      return Math.min(tx, ty); // fallback: show whichever edge comes first
+    }
 
     function updateTimer() {
-      const elapsed = ((Date.now() - lastCornerHit) / 1000).toFixed(1);
-      timer.textContent = `Time since last corner hit: ${elapsed}s`;
+      const t = timeToNextCorner();
+      if (t > 0) {
+        timer.textContent = `Next corner hit in: ${t.toFixed(1)}s`;
+      } else {
+        timer.textContent = "Next corner hit in: calculating…";
+      }
     }
 
     function animate() {
@@ -59,17 +79,6 @@
 
       dvd.style.left = x + "px";
       dvd.style.top = y + "px";
-
-      // Check for corner hit
-      const cornerHit =
-        (x <= 0 && y <= 0) ||
-        (x <= 0 && y + height >= screenH) ||
-        (x + width >= screenW && y <= 0) ||
-        (x + width >= screenW && y + height >= screenH);
-
-      if (cornerHit) {
-        lastCornerHit = Date.now();
-      }
 
       updateTimer();
       requestAnimationFrame(animate);
